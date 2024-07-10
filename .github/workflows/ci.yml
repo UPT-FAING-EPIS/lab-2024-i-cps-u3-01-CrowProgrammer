@@ -2,7 +2,7 @@ name: Tarea Automatizada de ejecución de pruebas
 
 env:
   DOTNET_VERSION: "7.0.409" # la versión de .NET
-  SONAR_ORG: "CrowProgrammer" # Nombre de la organización de sonar cloud
+  SONAR_ORG: "Aaron-Prueba-Calidad_y_prueba de sofware" # Nombre de la organización de sonar cloud
   SONAR_PROJECT: "aaron-prueba-calidad-y-prueba-de-sofware_bancaapp" # Key ID del proyecto de sonar
 on:
   push:
