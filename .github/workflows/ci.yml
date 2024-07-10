@@ -4,6 +4,7 @@ env:
   DOTNET_VERSION: "8.0" # la versión de .NET
   SONAR_ORG: "CrowProgrammer" # Nombre de la organización de sonar cloud
   SONAR_PROJECT: "aaron-prueba-calidad-y-prueba-de-sofware_bancaapp" # Key ID del proyecto de sonar
+
 on:
   push:
     branches: ["main"]
@@ -18,15 +19,11 @@ jobs:
       - name: Configurando la versión de NET
         uses: actions/setup-dotnet@v4
         with:
-          java-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
-      - name: Configurando la versión de NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Restaurar los paquetes
         run: dotnet restore
       - name: Ejecutar pruebas
@@ -42,21 +39,29 @@ jobs:
         with:
           name: CoverageReport
           path: coveragereport
-      - name: Publish coverage in build summary #
+      - name: Publish coverage in build summary
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
         shell: bash
       - name: Instalar Scanner
-        run: dotnet tool install -g dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+        env:
+          PATH: $PATH:/root/.dotnet/tools
       - name: Ejecutar escaneo
         run: |
           dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT }}" /o:"${{ env.SONAR_ORG }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build
           dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        env:
+          PATH: $PATH:/root/.dotnet/tools
       - name: Install Living Doc
-        run: dotnet tool install -g SpecFlow.Plus.LivingDoc.CLI
+        run: dotnet tool install --global SpecFlow.Plus.LivingDoc.CLI
+        env:
+          PATH: $PATH:/root/.dotnet/tools
       - name: Generate living doc
         run: livingdoc test-assembly ./Bank.Domain.Tests/bin/Debug/net8.0/Bank.Domain.Tests.dll -t ./Bank.Domain.Tests/bin/Debug/net8.0/TestExecution.json -o ./report/index.html
-      - uses: actions/upload-artifact@v3
+        env:
+          PATH: $PATH:/root/.dotnet/tools
+      - uses: actions/upload-artifact@v4
         with:
           name: specflow
           path: report
